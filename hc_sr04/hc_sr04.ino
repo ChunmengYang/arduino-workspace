@@ -1,6 +1,3 @@
-// ---------------------------------------------------------------------------
-// Example NewPing library sketch that pings 3 sensors 20 times a second.
-// ---------------------------------------------------------------------------
 #include <NewPing.h>
 
 #define  RIGHT_TRIGGER_PIN 10 //12端口
@@ -19,7 +16,7 @@ void setup() {
 int d = 50; //采集超声波距离周期
 void loop() {
   delay(d);
-
+  
   float d1 = sonar1.ping_cm();
   float d2 = sonar2.ping_cm();
   if (d1 > 1.0) {

@@ -105,7 +105,7 @@ void loop()
   Serial.println(dist);
   Serial.println(mp3.getStatus());
   
-  if(dist < 60) {
+  if(dist < 30) {
     if(mp3.getStatus() != 513) {
       mp3.playMp3FolderTrack(12);
     }
