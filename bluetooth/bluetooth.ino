@@ -1,8 +1,3 @@
-#include <SoftwareSerial.h>
-
-//// software serial: RX = digital pin 8, TX = digital pin 9
-//SoftwareSerial btSerial(8, 9);
-
 int inputPin = 3;
 
 uint8_t prev = 1;
