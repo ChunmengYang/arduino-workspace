@@ -8,12 +8,15 @@ void setup() {
   pinMode(inputPin, INPUT);
 
   Serial.begin(9600);
+  delay(200);
+  Serial.println("AT");
+  delay(200);
   Serial.println("AT+NAME=Texhong");
-  delay(500);
+  delay(200);
   Serial.println("AT+ROLE=1");
-  delay(500);
+  delay(200);
   Serial.println("AT+PSWD=1234");
-  delay(500);
+  delay(200);
 }
 
 void loop() {

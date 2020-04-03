@@ -2,7 +2,7 @@
 #include <SoftwareSerial.h>
 #include <DFMiniMp3.h>
 
-#define SLAVE_ADDRESS 0x05
+#define SLAVE_ADDRESS 0x07
 #define  TRIGGER_PIN 9
 #define  ECHO_PIN 10
 
@@ -11,6 +11,22 @@
 class Mp3Notify
 {
 public:
+  static void PrintlnSourceAction(DfMp3_PlaySources source, const char* action)
+  {
+    if (source & DfMp3_PlaySources_Sd) 
+    {
+        Serial.print("SD Card, ");
+    }
+    if (source & DfMp3_PlaySources_Usb) 
+    {
+        Serial.print("USB Disk, ");
+    }
+    if (source & DfMp3_PlaySources_Flash) 
+    {
+        Serial.print("Flash, ");
+    }
+    Serial.println(action);
+  }
   static void OnError(uint16_t errorCode)
   {
     // see DfMp3_Error for code meaning
@@ -18,54 +34,22 @@ public:
     Serial.print("Com Error ");
     Serial.println(errorCode);
   }
-
-  static void OnPlayFinished(uint16_t globalTrack)
+  static void OnPlayFinished(DfMp3_PlaySources source, uint16_t track)
   {
-    Serial.println();
     Serial.print("Play finished for #");
-    Serial.println(globalTrack);   
+    Serial.println(track);  
   }
-
-  static void OnCardOnline(uint16_t code)
+  static void OnPlaySourceOnline(DfMp3_PlaySources source)
   {
-    Serial.println();
-    Serial.print("Card online ");
-    Serial.println(code);     
+    PrintlnSourceAction(source, "online");
   }
-
-  static void OnUsbOnline(uint16_t code)
+  static void OnPlaySourceInserted(DfMp3_PlaySources source)
   {
-    Serial.println();
-    Serial.print("USB Disk online ");
-    Serial.println(code);     
+    PrintlnSourceAction(source, "inserted");
   }
-
-  static void OnCardInserted(uint16_t code)
+  static void OnPlaySourceRemoved(DfMp3_PlaySources source)
   {
-    Serial.println();
-    Serial.print("Card inserted ");
-    Serial.println(code); 
-  }
-
-  static void OnUsbInserted(uint16_t code)
-  {
-    Serial.println();
-    Serial.print("USB Disk inserted ");
-    Serial.println(code); 
-  }
-
-  static void OnCardRemoved(uint16_t code)
-  {
-    Serial.println();
-    Serial.print("Card removed ");
-    Serial.println(code);  
-  }
-
-  static void OnUsbRemoved(uint16_t code)
-  {
-    Serial.println();
-    Serial.print("USB Disk removed ");
-    Serial.println(code);  
+    PrintlnSourceAction(source, "removed");
   }
 };
 
@@ -103,11 +87,11 @@ void loop()
   delay(200);
   dist = readcm(TRIGGER_PIN, ECHO_PIN);
   Serial.println(dist);
-  Serial.println(mp3.getStatus());
+//  Serial.println(mp3.getStatus());
   
   if(dist < 30) {
     if(mp3.getStatus() != 513) {
-      mp3.playMp3FolderTrack(12);
+      mp3.playMp3FolderTrack(1);
     }
     start_time = millis();
   } else {
