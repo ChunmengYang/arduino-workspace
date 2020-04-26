@@ -1,9 +1,9 @@
 #include <NewPing.h>
 
-#define  RIGHT_TRIGGER_PIN 10 //12端口
-#define  RIGHT_ECHO_PIN 9 //11端口
-#define  LEFT_TRIGGER_PIN 6 //5端口
-#define  LEFT_ECHO_PIN 5 //5端口
+#define  RIGHT_TRIGGER_PIN 10 //D10端口
+#define  RIGHT_ECHO_PIN 9 //D9端口
+#define  LEFT_TRIGGER_PIN 5 //D5端口
+#define  LEFT_ECHO_PIN 4 //D4端口
 #define MAX_DISTANCE 50 // Maximum distance (in cm) to ping.
 
 NewPing sonar1 = NewPing(LEFT_TRIGGER_PIN, LEFT_ECHO_PIN, MAX_DISTANCE);
