@@ -13,6 +13,6 @@ AJ-SR04M超声波雷达传感器，感应角度小于75度，实际测试4米内
 MAX4466声音传感器，需要对着麦克风，才能感知到。
 接线方式：5V 接 nano 5V、OUT 接 nano A0口、GND 接 nano GND
 
-三线漫反射式红外光电+蓝牙做计数系统。
+Photoelectric_Bluetooth三线漫反射式红外光电+蓝牙做计数系统。
 蓝牙VCC 接 nano 5V、GND 接 nano GND 、RX 接 nano TX、TX 接 nano RX
 光电黑线 红线 接 24V+、蓝线 接 24V-、接 nano 3口、蓝线 接 nano GND，由于光电输出工作电压24V所有中间加分压电路，到nano的电压要到5V以内。
