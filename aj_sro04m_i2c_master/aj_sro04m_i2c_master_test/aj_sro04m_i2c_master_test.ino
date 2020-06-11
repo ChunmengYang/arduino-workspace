@@ -12,21 +12,48 @@ void setup() {
 
 void loop() {
   unsigned long endTime = millis();
+//  if((endTime - startTime) > interval) {
+//      startTime = endTime;
+//      unsigned long values[5] = {0, 0, 0, 0, 0};
+//      long num = random(0, 10);
+//      if (num > 1) {
+//          for (short i = 0; i < 5; i++) {
+//            if (i == 4) {
+//                values[i] = 20;
+//                continue;
+//            }
+//            long temp = random(0, 6);
+//            if (temp > 2) {
+//                values[i] = 20;
+//            }
+//          }
+//          interval = 5000; 
+//      } else {
+//          interval = 16000;  
+//      }
+//      
+//      result = "";
+//      for (short i = 0; i < 5; i++) {
+//        char s[2];
+//        itoa(values[i], s, 10);
+//        
+//        result = result + s;
+//        if (i < 4) {
+//           result = result + ',';
+//         }
+//      }
+//  }
+
   if((endTime - startTime) > interval) {
       startTime = endTime;
-      unsigned long values[5] = {0, 0, 0, 0, 0};
-      long num = random(0, 10);
-      if (num > 0) {
-          for (short i = 0; i < 5; i++) {
+      unsigned long values[5] = {0, 0, 0, 0, 20};
+      for (short i = 0; i < 5; i++) {
             long temp = random(0, 6);
             if (temp > 2) {
                 values[i] = 20;
             }
-          }
-          interval = 5000; 
-      } else {
-          interval = 16000;  
       }
+      interval = 5000; 
       
       result = "";
       for (short i = 0; i < 5; i++) {
