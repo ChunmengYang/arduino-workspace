@@ -2,7 +2,7 @@
 #include <SoftwareSerial.h>
 #include <DFMiniMp3.h>
 
-#define SLAVE_ADDRESS 0x05
+#define SLAVE_ADDRESS 0x03
 #define  TRIGGER_PIN 9
 #define  ECHO_PIN 10
 
@@ -37,7 +37,8 @@ class Mp3Notify
     static void OnPlayFinished(DfMp3_PlaySources source, uint16_t track)
     {
       Serial.print("Play finished for #");
-      Serial.println(track);
+      Serial.println();
+      
     }
     static void OnPlaySourceOnline(DfMp3_PlaySources source)
     {
@@ -59,13 +60,15 @@ class Mp3Notify
 SoftwareSerial softSerial(8, 7); // RX, TX
 DFMiniMp3<SoftwareSerial, Mp3Notify> mp3(softSerial);
 
+short mp3FolderTrack = 1;
+
 unsigned long start_time;
+short pre_dist = 0;
 short dist;
 short touching = 0;
 short opened = 0;
 char buf[2];
 
-short mp3FolderTrack = 1;
 
 void setup ()
 {
@@ -73,9 +76,9 @@ void setup ()
   Serial.begin(9600);
   Serial.println("initializing...");
   mp3.begin();
+  mp3.reset();
   // 0-30
-  mp3.setVolume(24);
-
+  mp3.setVolume(28);
 
   pinMode(TRIGGER_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
@@ -92,25 +95,22 @@ void loop()
   dist = readcm(TRIGGER_PIN, ECHO_PIN);
   Serial.println(dist);
 
-  if (dist < 30) {
+  if (dist < 30 && pre_dist < 30) {
     if (touching == 0) {
       if (opened == 0) {
         opened = 1;
-//        if (mp3.getStatus() != 513) {
-//          short folderTrack = mp3FolderTrack;
-//          mp3.playMp3FolderTrack(folderTrack);
-//
-////          if (mp3FolderTrack > 4) {
-////            mp3FolderTrack = 1;
-////          } else {
-////            mp3FolderTrack += 1;
-////          }
-//        }
+        if (mp3.getStatus() != 513) {
+          mp3FolderTrack += 1;
+          if (mp3FolderTrack > 4) {
+            mp3FolderTrack = 1;
+          }
+          mp3.playMp3FolderTrack(mp3FolderTrack);
+        }
       } else {
         opened = 0;
-//        if (mp3.getStatus() == 513) {
-//          mp3.stop();
-//        }
+        if (mp3.getStatus() == 513) {
+          mp3.stop();
+        }
       }
       touching = 1;
     }
@@ -122,6 +122,12 @@ void loop()
     }
   }
   Serial.println(opened);
+  if (opened == 1) {
+    if (mp3.getStatus() != 513) {
+      mp3.playMp3FolderTrack(mp3FolderTrack);
+    }
+  }
+  pre_dist = dist;
 }
 
 float readcm(int trigger_pin, int echo_pin) {
