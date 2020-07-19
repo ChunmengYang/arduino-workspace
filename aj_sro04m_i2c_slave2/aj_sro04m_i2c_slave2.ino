@@ -2,7 +2,7 @@
 #include <SoftwareSerial.h>
 #include <DFMiniMp3.h>
 
-#define SLAVE_ADDRESS 0x03
+#define SLAVE_ADDRESS 0x07
 #define  TRIGGER_PIN 9
 #define  ECHO_PIN 10
 
@@ -76,7 +76,6 @@ void setup ()
   Serial.begin(9600);
   Serial.println("initializing...");
   mp3.begin();
-  mp3.reset();
   // 0-30
   mp3.setVolume(28);
 
@@ -91,9 +90,9 @@ void setup ()
 
 void loop()
 {
-  delay(200);
+  delay(100);
   dist = readcm(TRIGGER_PIN, ECHO_PIN);
-  Serial.println(dist);
+//  Serial.println(dist);
 
   if (dist < 30 && pre_dist < 30) {
     if (touching == 0) {
@@ -121,7 +120,7 @@ void loop()
       touching = 0;
     }
   }
-  Serial.println(opened);
+//  Serial.println(opened);
   if (opened == 1) {
     if (mp3.getStatus() != 513) {
       mp3.playMp3FolderTrack(mp3FolderTrack);
