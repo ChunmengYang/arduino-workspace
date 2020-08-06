@@ -2,7 +2,7 @@
 #include <SoftwareSerial.h>
 #include <DFMiniMp3.h>
 
-#define SLAVE_ADDRESS 0x07
+#define SLAVE_ADDRESS 0x05
 #define  TRIGGER_PIN 9
 #define  ECHO_PIN 10
 

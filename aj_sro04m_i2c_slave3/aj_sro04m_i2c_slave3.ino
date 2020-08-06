@@ -2,7 +2,7 @@
 #include <SoftwareSerial.h>
 #include <DFRobotDFPlayerMini.h>
 
-#define SLAVE_ADDRESS 0x04
+#define SLAVE_ADDRESS 0x07
 #define  TRIGGER_PIN 9
 #define  ECHO_PIN 10
 
@@ -27,7 +27,7 @@ void setup ()
   softSerial.begin(9600);
   mp3.begin(softSerial);
   // 0-30
-  mp3.volume(30);
+  mp3.volume(20);
 
   pinMode(TRIGGER_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
@@ -42,7 +42,7 @@ void loop()
 {
   delay(100);
   dist = readcm(TRIGGER_PIN, ECHO_PIN);
-//  Serial.println(dist);
+  Serial.println(dist);
 
   if (dist < 30 && pre_dist < 30) {
     if (touching == 0) {
@@ -72,7 +72,7 @@ void loop()
     }
   }
   pre_dist = dist;
-//  Serial.println(opened);
+  Serial.println(opened);
 }
 
 float readcm(int trigger_pin, int echo_pin) {
