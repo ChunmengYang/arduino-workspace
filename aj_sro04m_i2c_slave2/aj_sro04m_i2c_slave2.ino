@@ -2,7 +2,7 @@
 #include <SoftwareSerial.h>
 #include <DFMiniMp3.h>
 
-#define SLAVE_ADDRESS 0x03
+#define SLAVE_ADDRESS 0x05
 #define  TRIGGER_PIN 9
 #define  ECHO_PIN 10
 
@@ -77,7 +77,7 @@ void setup ()
   Serial.println("initializing...");
   mp3.begin();
   // 0-30
-  mp3.setVolume(20);
+  mp3.setVolume(30);
 
   pinMode(TRIGGER_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
