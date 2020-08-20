@@ -1,8 +1,8 @@
 int inputPin = 3;
 
 uint8_t prev = 1;
-int pre_time = 0;
-int pre_pin_time = 0;
+int pre_time0 = 0;
+int pre_time1 = 0;
 
 void setup() {  
   // 3号数字口设置为输入状态
@@ -21,21 +21,24 @@ void setup() {
 }
 
 void loop() {
-  int pin_time = millis();
-  // 两个连续的读数间隔必须大于500毫秒
-  if((pin_time - pre_pin_time) > 1000) {
-    Serial.println("0");
-    pre_pin_time = pin_time;
-  }
-  
   int sensorValue = digitalRead(inputPin);
-  if(sensorValue == 0 && sensorValue != prev) {
+  if (sensorValue == 0) {
     int time = millis();
-    // 两个连续的读数间隔必须大于500毫秒
-    if((time - pre_time) > 1000) {
-      pre_time = time;
-      Serial.println("1");
+    if((time - pre_time0) > 300) {
+      pre_time0 = time;
+      Serial.println("0");
     }
   }
+  
+  if(sensorValue == 1 && sensorValue != prev) {
+//    int time = millis();
+//    // 两个连续的读数间隔必须大于300毫秒
+//    if((time - pre_time1) > 300) {
+//      pre_time1 = time;
+//      Serial.println("1");
+//    }
+    Serial.println("1");
+  }
+
   prev = sensorValue;
 }
