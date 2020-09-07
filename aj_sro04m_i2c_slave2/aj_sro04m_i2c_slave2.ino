@@ -1,64 +1,13 @@
 #include <Wire.h>
 #include <SoftwareSerial.h>
-#include <DFMiniMp3.h>
+#include <DFRobotDFPlayerMini.h>
 
-#define SLAVE_ADDRESS 0x05
+#define SLAVE_ADDRESS 0x03
 #define  TRIGGER_PIN 9
 #define  ECHO_PIN 10
 
-// implement a notification class,
-// its member methods will get called
-class Mp3Notify
-{
-  public:
-    static void PrintlnSourceAction(DfMp3_PlaySources source, const char* action)
-    {
-      if (source & DfMp3_PlaySources_Sd)
-      {
-        Serial.print("SD Card, ");
-      }
-      if (source & DfMp3_PlaySources_Usb)
-      {
-        Serial.print("USB Disk, ");
-      }
-      if (source & DfMp3_PlaySources_Flash)
-      {
-        Serial.print("Flash, ");
-      }
-      Serial.println(action);
-    }
-    static void OnError(uint16_t errorCode)
-    {
-      // see DfMp3_Error for code meaning
-      Serial.println();
-      Serial.print("Com Error ");
-      Serial.println(errorCode);
-    }
-    static void OnPlayFinished(DfMp3_PlaySources source, uint16_t track)
-    {
-      Serial.print("Play finished for #");
-      Serial.println();
-      
-    }
-    static void OnPlaySourceOnline(DfMp3_PlaySources source)
-    {
-      PrintlnSourceAction(source, "online");
-    }
-    static void OnPlaySourceInserted(DfMp3_PlaySources source)
-    {
-      PrintlnSourceAction(source, "inserted");
-    }
-    static void OnPlaySourceRemoved(DfMp3_PlaySources source)
-    {
-      PrintlnSourceAction(source, "removed");
-    }
-};
-
-// instance a DFMiniMp3 object,
-// defined with the above notification class and the hardware serial class
-//
 SoftwareSerial softSerial(8, 7); // RX, TX
-DFMiniMp3<SoftwareSerial, Mp3Notify> mp3(softSerial);
+DFRobotDFPlayerMini mp3;
 
 short mp3FolderTrack = 1;
 
@@ -68,16 +17,16 @@ short dist;
 short touching = 0;
 short opened = 0;
 char buf[2];
-
+short playing = 0;
 
 void setup ()
 {
   softSerial.begin(9600);
   Serial.begin(9600);
   Serial.println("initializing...");
-  mp3.begin();
+  mp3.begin(softSerial);
   // 0-30
-  mp3.setVolume(30);
+  mp3.volume(30);
 
   pinMode(TRIGGER_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
@@ -93,7 +42,7 @@ void loop()
 {
   delay(100);
   dist = readcm(TRIGGER_PIN, ECHO_PIN);
-  Serial.println(dist);
+//  Serial.println(dist);
 
   // 根据超声波数据确定开关
   if (dist < 30 && pre_dist < 30) {
@@ -101,7 +50,7 @@ void loop()
       if (opened == 0) {
         opened = 1;
         mp3FolderTrack += 1;
-        if (mp3FolderTrack > 4) {
+        if (mp3FolderTrack > 5) {
           mp3FolderTrack = 1;
         }
       } else {
@@ -120,14 +69,29 @@ void loop()
   // 根据开关标记播放或停止音频
   Serial.println(opened);
   if (opened == 1) {
-    if (mp3.getStatus() != 513) {
-      mp3.playMp3FolderTrack(mp3FolderTrack);
+    int state = mp3.readState();
+    if (state > 0 && state != 513) {
+      mp3.playMp3Folder(mp3FolderTrack);
+      delay(1000);
     }
   } else {
-    if (mp3.getStatus() == 513) {
+    if (mp3.readState() == 513) {
       mp3.stop();
     }
   }
+
+//  Serial.println(opened);
+//  if (opened == 1) {
+//    if (playing == 0) {
+//      mp3.loop(mp3FolderTrack);
+//      playing = 1;
+//    }
+//  } else {
+//    if (playing == 1) {
+//      mp3.stop();
+//      playing = 0;
+//    }
+//  }
 }
 
 // 读取超声波数
@@ -149,7 +113,7 @@ void receiveEvent(int howMany) {
   if (x == 1) {
     opened = 0;
   }
-  Serial.println("====close====");
+//  Serial.println("====close====");
 }
 // i2c从机发送数据
 void requestEvent() {

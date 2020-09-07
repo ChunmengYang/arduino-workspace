@@ -72,11 +72,9 @@ void loop() {
   
     if (change) {
       start_time = millis();
-      Serial.println("change");
     } else {
       // 60秒无操作，停止互动
       if ((millis() - start_time) > 60000) {
-        Serial.println("stop slave");
         byte x = byte(1);
         for (short i = 0; i < 5; i++) {
           short address = addresses[i];

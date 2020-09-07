@@ -1,15 +1,9 @@
 #include <Wire.h>
 #include <SoftwareSerial.h>
-#include <DFRobotDFPlayerMini.h>
 
-#define SLAVE_ADDRESS 0x04
+#define SLAVE_ADDRESS 0x06
 #define  TRIGGER_PIN 9
 #define  ECHO_PIN 10
-
-SoftwareSerial softSerial(8, 7); // RX, TX
-DFRobotDFPlayerMini mp3;
-
-short mp3FolderTrack = 1;
 
 unsigned long start_time;
 short pre_dist = 0;
@@ -18,16 +12,10 @@ short touching = 0;
 short opened = 0;
 char buf[2];
 
-
 void setup ()
 {
   Serial.begin(9600);
   Serial.println("initializing...");
-  
-  softSerial.begin(9600);
-  mp3.begin(softSerial);
-  // 0-30
-  mp3.volume(30);
 
   pinMode(TRIGGER_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
@@ -50,10 +38,6 @@ void loop()
     if (touching == 0) {
       if (opened == 0) {
         opened = 1;
-        mp3FolderTrack += 1;
-        if (mp3FolderTrack > 4) {
-          mp3FolderTrack = 1;
-        }
       } else {
         opened = 0;
       }
@@ -66,20 +50,9 @@ void loop()
     }
   }
   pre_dist = dist;
-
-  // 根据开关标记播放或停止音频
   Serial.println(opened);
-  if (opened == 1) {
-    if (mp3.readState() != 513) {
-//      Serial.println(mp3FolderTrack);
-      mp3.loop(mp3FolderTrack);
-    }
-  } else {
-    if (mp3.readState() == 513) {
-      mp3.stop();
-    }
-  }
 }
+
 // 读取超声波数
 float readcm(int trigger_pin, int echo_pin) {
   digitalWrite(trigger_pin, LOW);
@@ -99,7 +72,7 @@ void receiveEvent(int howMany) {
   if (x == 1) {
     opened = 0;
   }
-  Serial.println("====close====");
+//  Serial.println("====close====");
 }
 // i2c从机发送数据
 void requestEvent() {
