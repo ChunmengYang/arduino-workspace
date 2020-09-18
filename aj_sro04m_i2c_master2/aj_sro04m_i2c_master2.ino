@@ -75,7 +75,7 @@ void loop() {
     } else {
       // 60秒无操作，停止互动
       if ((millis() - start_time) > 60000) {
-        byte x = byte(1);
+        byte x = byte(2);
         for (short i = 0; i < 5; i++) {
           short address = addresses[i];
           Wire.beginTransmission(address);  // transmit to device #address
