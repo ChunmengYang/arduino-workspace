@@ -63,7 +63,7 @@ void loop() {
   Serial.println(str);
 
   if (str == "") {
-    delay(200);
+    delay(100);
     return;
   }
 
@@ -98,5 +98,5 @@ void loop() {
 
   } while(index >=0);  
  
-  delay(180);
+  delay(80);
 }
