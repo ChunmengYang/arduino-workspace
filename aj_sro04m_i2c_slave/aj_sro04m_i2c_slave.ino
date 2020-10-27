@@ -1,121 +1,93 @@
 #include <Wire.h>
-#include <SoftwareSerial.h>
-#include <DFMiniMp3.h>
+#include <Adafruit_NeoPixel.h>
 
-#define SLAVE_ADDRESS 0x05
-#define  TRIGGER_PIN 9
-#define  ECHO_PIN 10
+#define SLAVE_ADDRESS 0x03
+#define  ECHO_PIN 9
 
-// implement a notification class,
-// its member methods will get called 
-class Mp3Notify
-{
-public:
-  static void PrintlnSourceAction(DfMp3_PlaySources source, const char* action)
-  {
-    if (source & DfMp3_PlaySources_Sd) 
-    {
-        Serial.print("SD Card, ");
-    }
-    if (source & DfMp3_PlaySources_Usb) 
-    {
-        Serial.print("USB Disk, ");
-    }
-    if (source & DfMp3_PlaySources_Flash) 
-    {
-        Serial.print("Flash, ");
-    }
-    Serial.println(action);
-  }
-  static void OnError(uint16_t errorCode)
-  {
-    // see DfMp3_Error for code meaning
-    Serial.println();
-    Serial.print("Com Error ");
-    Serial.println(errorCode);
-  }
-  static void OnPlayFinished(DfMp3_PlaySources source, uint16_t track)
-  {
-    Serial.print("Play finished for #");
-    Serial.println(track);  
-  }
-  static void OnPlaySourceOnline(DfMp3_PlaySources source)
-  {
-    PrintlnSourceAction(source, "online");
-  }
-  static void OnPlaySourceInserted(DfMp3_PlaySources source)
-  {
-    PrintlnSourceAction(source, "inserted");
-  }
-  static void OnPlaySourceRemoved(DfMp3_PlaySources source)
-  {
-    PrintlnSourceAction(source, "removed");
-  }
-};
-
-// instance a DFMiniMp3 object, 
-// defined with the above notification class and the hardware serial class
-//
-SoftwareSerial softSerial(8, 7); // RX, TX
-DFMiniMp3<SoftwareSerial, Mp3Notify> mp3(softSerial);
+#define LED_PIN 8
+#define NUMPIXELS 12
+Adafruit_NeoPixel pixels(NUMPIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 unsigned long start_time;
+short pre_dist = 0;
 short dist;
+short touching = 0;
+short opened = 0;
 char buf[2];
 
 void setup ()
 {
-  softSerial.begin(9600);
   Serial.begin(9600);
   Serial.println("initializing...");
-  mp3.begin();
-  // 0-30
-  mp3.setVolume(24);
-
   
-  pinMode(TRIGGER_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
+
+  pixels.begin();
+  pixels.setBrightness(64);
 
   // join i2c bus with address SLAVE_ADDRESS
   Wire.begin(SLAVE_ADDRESS);
   Wire.onRequest(requestEvent);
+  Wire.onReceive(receiveEvent);
   Serial.println("starting...");
 }
 
 void loop()
 {
   delay(200);
-  dist = readcm(TRIGGER_PIN, ECHO_PIN);
+  dist = digitalRead(ECHO_PIN);
   Serial.println(dist);
-//  Serial.println(mp3.getStatus());
-  
-  if(dist < 30) {
-    if(mp3.getStatus() != 513) {
-      mp3.playMp3FolderTrack(1);
+
+  // 根据光电数据确定开关
+  if (dist == 0 && pre_dist == 0) {
+    if (touching == 0) {
+      if (opened == 0) {
+        opened = 1;
+        light_on();
+      } else {
+        opened = 0;
+        light_of();
+      }
+      touching = 1;
     }
     start_time = millis();
+    dist = 1;
   } else {
-    if(mp3.getStatus() == 513 && (millis() - start_time) > 600) {
-      mp3.stop();
+    if ((millis() - start_time) > 800) {
+      touching = 0;
     }
   }
+  pre_dist = dist;
+  Serial.println(opened);
 }
 
-float readcm(int trigger_pin, int echo_pin) {
-  digitalWrite(trigger_pin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigger_pin, HIGH);
-  delayMicroseconds(20);
-  digitalWrite(trigger_pin, LOW);
-  delayMicroseconds(2);
-    
-  dist = pulseIn(echo_pin, HIGH) / 58.00;
-  return dist;
+void light_on() {
+  pixels.clear(); 
+  for (int i=0; i<NUMPIXELS; i++) {
+    pixels.setPixelColor(i, pixels.Color(150, 150, 0));  
+  }
+  pixels.show();
+}
+void light_of() {
+  pixels.clear(); 
+  for (int i=0; i<NUMPIXELS; i++) {
+    pixels.setPixelColor(i, pixels.Color(0, 0, 0));  
+  }
+  pixels.show();
 }
 
+// i2c从机接收数据
+void receiveEvent(int howMany) {
+  int x = Wire.read();            // receive byte as an integer
+  if (x == 2) {
+    opened = 0;
+  }
+  Serial.println("====close====");
+}
+// i2c从机发送数据
 void requestEvent() {
   // Write short(16bit) number
-  buf[0] = byte(dist);
-  buf[1] = byte(dist >> 8);
+  buf[0] = byte(opened);
+  buf[1] = byte(opened >> 8);
   Wire.write(buf, 2);
 }

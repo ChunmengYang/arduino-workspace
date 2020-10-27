@@ -1,8 +1,6 @@
 #include <Wire.h>
 
 short addresses[5] = {3, 4, 5, 6, 7};
-short pre_values[5] = {0, 0, 0, 0, 0};
-unsigned long start_time;
 
 void setup() {
   // put your setup code here, to run once:
@@ -44,11 +42,7 @@ void loop() {
   }
 
   String result = "";
-  bool all_is_0 = true;
   for (short i = 0; i < 5; i++) {
-    if (values[i] > 0) {
-      all_is_0 = false;
-    }
     char s[2];
     itoa(values[i], s, 10);
     
@@ -57,36 +51,52 @@ void loop() {
        result = result + ',';
      }
   }
-  Serial.println(result);
-  delay(200);
 
-  if (!all_is_0) {
-    // 与上次数据比较是否有变化
-    bool change = false;
-    for (short i = 0; i < 5; i++) {
-      if (pre_values[i] != values[i]) {
-        change = true;
-        pre_values[i] = values[i];
-      }
-    }
+  // 发送互动参数
+  Serial.println(result);
   
-    if (change) {
-      start_time = millis();
-    } else {
-      // 60秒无操作，停止互动
-      if ((millis() - start_time) > 60000) {
-        byte x = byte(2);
-        for (short i = 0; i < 5; i++) {
-          short address = addresses[i];
-          Wire.beginTransmission(address);  // transmit to device #address
-          Wire.write(x);                    // sends one byte
-          Wire.endTransmission();           // stop transmitting
-        }
-      }
-    }
-  } else {
-    for (short i = 0; i < 5; i++) {
-      pre_values[i] = values[i];
-    }
+  // 接收回传参数
+  String str = "";
+  while(Serial.available()){
+    str = str + char(Serial.read());
   }
+  Serial.println(str);
+
+  if (str == "") {
+    delay(100);
+    return;
+  }
+
+  String sep = ",";
+  int index; 
+  String itemStr;
+  do {
+    index = str.indexOf(sep);
+    if (index != -1) {
+        itemStr = str.substring(0, index);
+        str = str.substring(index + sep.length(), str.length());
+    } else {
+       if(str.length() > 0)
+        itemStr = str;
+    }
+
+    String itemSep = "-";
+    int i2cIndex = -1;
+    String temps = "";
+    int itemIndex = itemStr.indexOf(itemSep);
+    if (itemIndex != -1) {
+        i2cIndex = itemStr.substring(0, itemIndex).toInt();
+        temps = itemStr.substring(itemIndex + itemSep.length(), itemStr.length());
+
+        if (i2cIndex >= 0 && i2cIndex < 5) {
+          short address = addresses[i2cIndex];
+          Wire.beginTransmission(address);  // transmit to device #address
+          Wire.write(temps.c_str());        // sends String
+          Wire.endTransmission();   
+        }
+    }
+
+  } while(index >=0);  
+ 
+  delay(80);
 }
